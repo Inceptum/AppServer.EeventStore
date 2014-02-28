@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{64706F50-11A9-4EAA-9A8D-4DB68F7F9BFE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Inceptum.Applications.EventStoreNode.Cluster</RootNamespace>
+    <AssemblyName>Inceptum.Applications.EventStoreNode.Cluster</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Castle.Core">
+      <HintPath>..\packages\Castle.Core.3.2.0\lib\net45\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Castle.Services.Logging.NLogIntegration">
+      <HintPath>..\packages\Castle.Core-NLog.3.2.0\lib\net40\Castle.Services.Logging.NLogIntegration.dll</HintPath>
+    </Reference>
+    <Reference Include="Castle.Windsor">
+      <HintPath>..\packages\Castle.Windsor.3.2.1\lib\net45\Castle.Windsor.dll</HintPath>
+    </Reference>
+    <Reference Include="EventStore.BufferManagement">
+      <HintPath>..\..\eventstore\EventStore.BufferManagement.dll</HintPath>
+    </Reference>
+    <Reference Include="EventStore.ClusterNode">
+      <HintPath>..\..\eventstore\EventStore.ClusterNode.exe</HintPath>
+    </Reference>
+    <Reference Include="EventStore.ClusterNode.Web">
+      <HintPath>..\..\eventstore\EventStore.ClusterNode.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="EventStore.Common">
+      <HintPath>..\..\eventstore\EventStore.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="EventStore.Core">
+      <HintPath>..\..\eventstore\EventStore.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="EventStore.Projections.Core">
+      <HintPath>..\..\eventstore\EventStore.Projections.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="EventStore.Transport.Http">
+      <HintPath>..\..\eventstore\EventStore.Transport.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="EventStore.Transport.Tcp">
+      <HintPath>..\..\eventstore\EventStore.Transport.Tcp.dll</HintPath>
+    </Reference>
+    <Reference Include="EventStore.Web">
+      <HintPath>..\..\eventstore\EventStore.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="EventStore.Web.Playground">
+      <HintPath>..\..\eventstore\EventStore.Web.Playground.exe</HintPath>
+    </Reference>
+    <Reference Include="Inceptum.AppServer.Sdk">
+      <HintPath>..\packages\Inceptum.AppServer.Sdk.1.3.1.42\lib\net40\Inceptum.AppServer.Sdk.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog">
+      <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>..\packages\protobuf-net.2.0.0.594\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApplicationInstaller.cs" />
+    <Compile Include="ClusterNodeApplication.cs" />
+    <Compile Include="ClusterNodeConfiguration.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Inceptum.Applications.EventStoreNode.Common\Inceptum.Applications.EventStoreNode.Common.csproj">
+      <Project>{27C65FFE-732B-4211-8B6E-2DFD0F367D87}</Project>
+      <Name>Inceptum.Applications.EventStoreNode.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="..\..\eventstore\**\*.*" Exclude="..\..\eventstore\*.*">
+      <Link>Content\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,15 @@
+{
+  "inMemDb": true,
+  "internalIp": "127.0.0.1",
+  "internalTcpPort": 1111,
+  "internalHttpPort": 1113,
+  "externalIp": "127.0.0.1",
+  "externalTcpPort": 1112,
+  "externalHttpPort": 1114,
+  "clusterSize": 3,
+  "discoverViaDns": false,
+  "gossipSeeds": [
+    "127.0.0.1:2113",
+    "127.0.0.1:3113"
+  ]
+}
