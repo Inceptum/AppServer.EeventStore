@@ -39,8 +39,17 @@
     <Reference Include="Castle.Windsor">
       <HintPath>..\packages\Castle.Windsor.3.2.1\lib\net45\Castle.Windsor.dll</HintPath>
     </Reference>
+    <Reference Include="esquery">
+      <HintPath>..\..\eventstore\esquery.exe</HintPath>
+    </Reference>
     <Reference Include="EventStore.BufferManagement">
       <HintPath>..\..\eventstore\EventStore.BufferManagement.dll</HintPath>
+    </Reference>
+    <Reference Include="EventStore.ClientAPI">
+      <HintPath>..\..\eventstore\EventStore.ClientAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="EventStore.ClusterNode.Web">
+      <HintPath>..\..\eventstore\EventStore.ClusterNode.Web.dll</HintPath>
     </Reference>
     <Reference Include="EventStore.Common">
       <HintPath>..\..\eventstore\EventStore.Common.dll</HintPath>
@@ -50,9 +59,6 @@
     </Reference>
     <Reference Include="EventStore.Projections.Core">
       <HintPath>..\..\eventstore\EventStore.Projections.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="EventStore.SingleNode">
-      <HintPath>..\..\eventstore\EventStore.SingleNode.exe</HintPath>
     </Reference>
     <Reference Include="EventStore.SingleNode.Web">
       <HintPath>..\..\eventstore\EventStore.SingleNode.Web.dll</HintPath>
@@ -77,6 +83,9 @@
     </Reference>
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="padmin">
+      <HintPath>..\..\eventstore\padmin.exe</HintPath>
     </Reference>
     <Reference Include="protobuf-net">
       <HintPath>..\packages\protobuf-net.2.0.0.594\lib\net40\protobuf-net.dll</HintPath>
@@ -108,6 +117,14 @@
   <ItemGroup>
     <Content Include="..\..\eventstore\**\*.*" Exclude="..\..\eventstore\*.*">
       <Link>Content\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\eventstore\js1.dll">
+      <Link>js1.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\eventstore\js1.pdb">
+      <Link>js1.pdb</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
