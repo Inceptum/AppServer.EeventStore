@@ -30,6 +30,6 @@
   "sslValidateServer": true,
   "statsPeriodSec": 30,
   "clusterGossipPort": 30777,
-  "runProjections": "System",
+  "runProjections": "All",
   "projectionThreads": 3
 }
