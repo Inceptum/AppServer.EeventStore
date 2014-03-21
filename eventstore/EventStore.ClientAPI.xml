@@ -4,6 +4,19 @@
         <name>EventStore.ClientAPI</name>
     </assembly>
     <members>
+        <member name="T:EventStore.ClientAPI.AllCheckpoint">
+            <summary>
+            This class contains constants to be used when setting up subscriptions
+            using the  <see cref="M:EventStore.ClientAPI.IEventStoreConnection.SubscribeToAllFrom(System.Nullable{EventStore.ClientAPI.Position},System.Boolean,System.Action{EventStore.ClientAPI.EventStoreCatchUpSubscription,EventStore.ClientAPI.ResolvedEvent},System.Action{EventStore.ClientAPI.EventStoreCatchUpSubscription},System.Action{EventStore.ClientAPI.EventStoreCatchUpSubscription,EventStore.ClientAPI.SubscriptionDropReason,System.Exception},EventStore.ClientAPI.SystemData.UserCredentials,System.Int32)"/> method on
+            <see cref="T:EventStore.ClientAPI.IEventStoreConnection"/>.
+            </summary>
+        </member>
+        <member name="F:EventStore.ClientAPI.AllCheckpoint.AllStart">
+            <summary>
+            Indicates that a catch-up subscription should receive all events
+            in the database.
+            </summary>
+        </member>
         <member name="T:EventStore.ClientAPI.AllEventsSlice">
             <summary>
             The result of a read operation from the $all stream.
@@ -32,6 +45,19 @@
         <member name="P:EventStore.ClientAPI.AllEventsSlice.IsEndOfStream">
             <summary>
             A boolean representing whether or not this is the end of the $all stream.
+            </summary>
+        </member>
+        <member name="T:EventStore.ClientAPI.StreamCheckpoint">
+            <summary>
+            This class contains constants to be used when setting up subscriptions
+            using the  <see cref="M:EventStore.ClientAPI.IEventStoreConnection.SubscribeToStreamFrom(System.String,System.Nullable{System.Int32},System.Boolean,System.Action{EventStore.ClientAPI.EventStoreCatchUpSubscription,EventStore.ClientAPI.ResolvedEvent},System.Action{EventStore.ClientAPI.EventStoreCatchUpSubscription},System.Action{EventStore.ClientAPI.EventStoreCatchUpSubscription,EventStore.ClientAPI.SubscriptionDropReason,System.Exception},EventStore.ClientAPI.SystemData.UserCredentials,System.Int32)"/> method
+            on <see cref="T:EventStore.ClientAPI.IEventStoreConnection"/>.
+            </summary>
+        </member>
+        <member name="F:EventStore.ClientAPI.StreamCheckpoint.StreamStart">
+            <summary>
+            Indicates that a catch-up subscription should receive all events
+            in the stream.
             </summary>
         </member>
         <member name="T:EventStore.ClientAPI.ClientAuthenticationFailedEventArgs">
@@ -633,6 +659,82 @@
         <member name="F:EventStore.ClientAPI.EventReadStatus.StreamDeleted">
             <summary>
             The stream previously existed but was deleted.
+            </summary>
+        </member>
+        <member name="T:EventStore.ClientAPI.Exceptions.ProjectionCommandConflictException">
+            <summary>
+            Exception thrown if a projection command fails.
+            </summary>
+        </member>
+        <member name="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException">
+            <summary>
+            Exception thrown if a projection command fails.
+            </summary>
+        </member>
+        <member name="T:EventStore.ClientAPI.Exceptions.EventStoreConnectionException">
+            <summary>
+            Base type for exceptions thrown by an <see cref="T:EventStore.ClientAPI.IEventStoreConnection"/>,
+            thrown in circumstances which don't have a specific derived exception.
+            </summary>
+        </member>
+        <member name="M:EventStore.ClientAPI.Exceptions.EventStoreConnectionException.#ctor">
+            <summary>
+            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.EventStoreConnectionException"/>.
+            </summary>
+        </member>
+        <member name="M:EventStore.ClientAPI.Exceptions.EventStoreConnectionException.#ctor(System.String)">
+            <summary>
+            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.EventStoreConnectionException"/>.
+            </summary>
+        </member>
+        <member name="M:EventStore.ClientAPI.Exceptions.EventStoreConnectionException.#ctor(System.String,System.Exception)">
+            <summary>
+            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.EventStoreConnectionException"/>.
+            </summary>
+        </member>
+        <member name="M:EventStore.ClientAPI.Exceptions.EventStoreConnectionException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.EventStoreConnectionException"/>.
+            </summary>
+        </member>
+        <member name="M:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException.#ctor">
+            <summary>
+            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException"/>.
+            </summary>
+        </member>
+        <member name="M:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException.#ctor(System.String)">
+            <summary>
+            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException"/>.
+            </summary>
+        </member>
+        <member name="M:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException.#ctor(System.String,System.Exception)">
+            <summary>
+            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException"/>.
+            </summary>
+        </member>
+        <member name="M:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException"/>.
+            </summary>
+        </member>
+        <member name="M:EventStore.ClientAPI.Exceptions.ProjectionCommandConflictException.#ctor">
+            <summary>
+            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException"/>.
+            </summary>
+        </member>
+        <member name="M:EventStore.ClientAPI.Exceptions.ProjectionCommandConflictException.#ctor(System.String)">
+            <summary>
+            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException"/>.
+            </summary>
+        </member>
+        <member name="M:EventStore.ClientAPI.Exceptions.ProjectionCommandConflictException.#ctor(System.String,System.Exception)">
+            <summary>
+            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException"/>.
+            </summary>
+        </member>
+        <member name="M:EventStore.ClientAPI.Exceptions.ProjectionCommandConflictException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException"/>.
             </summary>
         </member>
         <member name="T:EventStore.ClientAPI.RawStreamMetadataResult">
@@ -1392,7 +1494,7 @@
         <member name="M:EventStore.ClientAPI.IEventStoreConnection.SubscribeToStreamFrom(System.String,System.Nullable{System.Int32},System.Boolean,System.Action{EventStore.ClientAPI.EventStoreCatchUpSubscription,EventStore.ClientAPI.ResolvedEvent},System.Action{EventStore.ClientAPI.EventStoreCatchUpSubscription},System.Action{EventStore.ClientAPI.EventStoreCatchUpSubscription,EventStore.ClientAPI.SubscriptionDropReason,System.Exception},EventStore.ClientAPI.SystemData.UserCredentials,System.Int32)">
             <summary>
             Subscribes to a single event stream. Existing events from
-            fromEventNumberExclusive onwards are read from the stream
+            lastCheckpoint onwards are read from the stream
             and presented to the user of <see cref="T:EventStore.ClientAPI.EventStoreCatchUpSubscription"/>
             as if they had been pushed.
             
@@ -1405,9 +1507,15 @@
             phase to the live subscription phase.
             </summary>
             <param name="stream">The stream to subscribe to</param>
-            <param name="fromEventNumberExclusive">The event number from which to start.
-            Use <see cref="F:EventStore.ClientAPI.StreamPosition.Start"/> to get events from the start of the stream,
-            and null to receive new events only.</param>
+            <param name="lastCheckpoint">The event number from which to start.
+            
+            To receive all events in the stream, use <see cref="F:EventStore.ClientAPI.StreamCheckpoint.StreamStart"/>.
+            If events have already been received and resubscription from the same point
+            is desired, use the event number of the last event processed which
+            appeared on the subscription.
+            
+            NOTE: Using <see cref="F:EventStore.ClientAPI.StreamPosition.Start"/> here will result in missing
+            the first event in the stream.</param>
             <param name="resolveLinkTos">Whether to resolve Link events automatically</param>
             <param name="eventAppeared">An action invoked when an event is received over the subscription</param>
             <param name="liveProcessingStarted">An action invoked when the subscription switches to newly-pushed events</param>
@@ -1442,7 +1550,7 @@
         </member>
         <member name="M:EventStore.ClientAPI.IEventStoreConnection.SubscribeToAllFrom(System.Nullable{EventStore.ClientAPI.Position},System.Boolean,System.Action{EventStore.ClientAPI.EventStoreCatchUpSubscription,EventStore.ClientAPI.ResolvedEvent},System.Action{EventStore.ClientAPI.EventStoreCatchUpSubscription},System.Action{EventStore.ClientAPI.EventStoreCatchUpSubscription,EventStore.ClientAPI.SubscriptionDropReason,System.Exception},EventStore.ClientAPI.SystemData.UserCredentials,System.Int32)">
             <summary>
-            Subscribes to a all events. Existing events from fromPositionExclusive
+            Subscribes to a all events. Existing events from lastCheckpoint
             onwards are read from the Event Store and presented to the user of
             <see cref="T:EventStore.ClientAPI.EventStoreCatchUpSubscription"/> as if they had been pushed.
             
@@ -1454,9 +1562,15 @@
             <see cref="T:EventStore.ClientAPI.EventStoreCatchUpSubscription"/> switches from the reading
             phase to the live subscription phase.
             </summary>
-            <param name="fromPositionExclusive">The event number from which to start.
-            Use <see cref="F:EventStore.ClientAPI.Position.Start"/> to get events from the start of the log,
-            and null to receive new events only.</param>
+            <param name="lastCheckpoint">The position from which to start.
+            
+            To receive all events in the database, use <see cref="F:EventStore.ClientAPI.AllCheckpoint.AllStart"/>.
+            If events have already been received and resubscription from the same point
+            is desired, use the position representing the last event processed which
+            appeared on the subscription.
+            
+            NOTE: Using <see cref="F:EventStore.ClientAPI.Position.Start"/> here will result in missing
+            the first event in the stream.</param>
             <param name="resolveLinkTos">Whether to resolve Link events automatically</param>
             <param name="eventAppeared">An action invoked when an event is received over the subscription</param>
             <param name="liveProcessingStarted">An action invoked when the subscription switches to newly-pushed events</param>
@@ -1624,32 +1738,6 @@
         <member name="T:EventStore.ClientAPI.Exceptions.ClusterException">
             <summary>
             Exception thrown if cluster discovery fails.
-            </summary>
-        </member>
-        <member name="T:EventStore.ClientAPI.Exceptions.EventStoreConnectionException">
-            <summary>
-            Base type for exceptions thrown by an <see cref="T:EventStore.ClientAPI.IEventStoreConnection"/>,
-            thrown in circumstances which don't have a specific derived exception.
-            </summary>
-        </member>
-        <member name="M:EventStore.ClientAPI.Exceptions.EventStoreConnectionException.#ctor">
-            <summary>
-            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.EventStoreConnectionException"/>.
-            </summary>
-        </member>
-        <member name="M:EventStore.ClientAPI.Exceptions.EventStoreConnectionException.#ctor(System.String)">
-            <summary>
-            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.EventStoreConnectionException"/>.
-            </summary>
-        </member>
-        <member name="M:EventStore.ClientAPI.Exceptions.EventStoreConnectionException.#ctor(System.String,System.Exception)">
-            <summary>
-            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.EventStoreConnectionException"/>.
-            </summary>
-        </member>
-        <member name="M:EventStore.ClientAPI.Exceptions.EventStoreConnectionException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
-            <summary>
-            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.EventStoreConnectionException"/>.
             </summary>
         </member>
         <member name="M:EventStore.ClientAPI.Exceptions.ClusterException.#ctor">
@@ -2343,31 +2431,6 @@
             Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.CannotEstablishConnectionException"/>.
             </summary>
         </member>
-        <member name="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException">
-            <summary>
-            Exception thrown if a projection command fails.
-            </summary>
-        </member>
-        <member name="M:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException.#ctor">
-            <summary>
-            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException"/>.
-            </summary>
-        </member>
-        <member name="M:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException.#ctor(System.String)">
-            <summary>
-            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException"/>.
-            </summary>
-        </member>
-        <member name="M:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException.#ctor(System.String,System.Exception)">
-            <summary>
-            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException"/>.
-            </summary>
-        </member>
-        <member name="M:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
-            <summary>
-            Constructs a new <see cref="T:EventStore.ClientAPI.Exceptions.ProjectionCommandFailedException"/>.
-            </summary>
-        </member>
         <member name="T:EventStore.ClientAPI.Exceptions.InvalidTransactionException">
             <summary>
             Exception thrown if there is an attempt to operate inside a
@@ -2820,6 +2883,21 @@
         </member>
         <member name="M:EventStore.ClientAPI.ProjectionsManager.DisableAsync(System.String,EventStore.ClientAPI.SystemData.UserCredentials)">
             <summary>
+            Asynchronously aborts and disables a projection without writing a checkpoint.
+            </summary>
+            <param name="name">The name of the projection.</param>
+            <param name="userCredentials">Credentials for a user with permission to disable a projection.</param>
+            <returns>A task representing the operation.</returns>
+        </member>
+        <member name="M:EventStore.ClientAPI.ProjectionsManager.Abort(System.String,EventStore.ClientAPI.SystemData.UserCredentials)">
+            <summary>
+            Synchronously avborts and disables a projection without writing a checkpoint.
+            </summary>
+            <param name="name">The name of the projection.</param>
+            <param name="userCredentials">Credentials for a user with permission to disable a projection.</param>
+        </member>
+        <member name="M:EventStore.ClientAPI.ProjectionsManager.AbortAsync(System.String,EventStore.ClientAPI.SystemData.UserCredentials)">
+            <summary>
             Asynchronously disables a projection.
             </summary>
             <param name="name">The name of the projection.</param>
@@ -3026,6 +3104,11 @@
         <member name="F:EventStore.ClientAPI.RecordedEvent.Metadata">
             <summary>
             A byte array representing the metadata associated with this event
+            </summary>
+        </member>
+        <member name="F:EventStore.ClientAPI.RecordedEvent.Created">
+            <summary>
+            A datetime representing when this event was created in the system
             </summary>
         </member>
         <member name="T:EventStore.ClientAPI.SliceReadStatus">

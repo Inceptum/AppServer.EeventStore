@@ -57,6 +57,10 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             RunProjections = Opts.RunProjectionsDefault;
             ProjectionThreads = Opts.ProjectionThreadsDefault;
 
+            AdminOnExt = Opts.AdminOnExtDefault;
+            StatsOnExt = Opts.StatsOnExtDefault;
+            GossipOnExt = Opts.GossipOnExtDefault;
+
             #endregion
         }
 
@@ -131,6 +135,11 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
         public bool SslValidateServer { get; set; }
         public double StatsPeriodSec { get; set; }
         public int NodePriority { get; set; }
+
+        public bool AdminOnExt { get; set; }
+        public bool StatsOnExt { get; set; }
+        public bool GossipOnExt { get; set; }
+
         public bool DisableScavengeMerging { get; set; }
 
         public int ClusterGossipPort { get; set; }

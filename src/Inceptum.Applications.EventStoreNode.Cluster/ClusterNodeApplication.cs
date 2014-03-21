@@ -117,7 +117,7 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
 
             var authenticationProviderFactory = getAuthenticationProviderFactory(configuration.AuthenticationType, configuration.AuthenticationConfigFile);
 
-            var nodeSettings =  new ClusterVNodeSettings(Guid.NewGuid(),
+            var nodeSettings =  new ClusterVNodeSettings(Guid.NewGuid(), 0,
 	                                        intTcp, intSecTcp, extTcp, extSecTcp, intHttp, extHttp,
 	                                        prefixes, configuration.EnableTrustedAuth,
 	                                        certificate,
@@ -129,7 +129,8 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
 	                                        TimeSpan.FromMilliseconds(configuration.CommitTimeoutMs),
 	                                        configuration.UseInternalSsl, configuration.SslTargetHost, configuration.SslValidateServer,
 	                                        TimeSpan.FromSeconds(configuration.StatsPeriodSec), StatsStorage.StreamAndCsv,
-											configuration.NodePriority, authenticationProviderFactory, configuration.DisableScavengeMerging);
+											configuration.NodePriority, authenticationProviderFactory, configuration.DisableScavengeMerging,
+                                            configuration.AdminOnExt, configuration.StatsOnExt, configuration.GossipOnExt);
 
             
             IGossipSeedSource gossipSeedSource;
