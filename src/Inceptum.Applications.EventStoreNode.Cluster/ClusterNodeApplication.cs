@@ -17,13 +17,17 @@ using EventStore.Core.Util;
 using EventStore.Projections.Core;
 using EventStore.Web.Users;
 using Inceptum.AppServer;
-using Inceptum.Applications.EventStoreNode.Common;
+using EventStore.Common.Log;
+using EventStore.Core.TransactionLog.Checkpoint;
+using EventStore.Core.TransactionLog.FileNamingStrategy;
+
 
 namespace Inceptum.Applications.EventStoreNode.Cluster
 {
-    public class ClusterNodeApplication : NodeApplicationBase, IHostedApplication, IDisposable
+    public class ClusterNodeApplication : IHostedApplication, IDisposable
     {
-        private readonly ILogger m_Logger;
+        private readonly ILoggerFactory m_LoggerFactory;
+        private readonly Castle.Core.Logging.ILogger m_Logger;
         private readonly ClusterNodeConfiguration m_Configuration;
         
         private ExclusiveDbLock m_DbLock;
@@ -31,8 +35,13 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
         private ClusterVNode m_Node;
         private ClusterNodeMutex m_ClusterNodeMutex;
         
-        public ClusterNodeApplication(ILoggerFactory loggerFactory, ILogger logger, ClusterNodeConfiguration configuration) : base(loggerFactory)
+        public ClusterNodeApplication(ILoggerFactory loggerFactory, Castle.Core.Logging.ILogger logger, ClusterNodeConfiguration configuration)
         {
+            if (loggerFactory == null) throw new ArgumentNullException("loggerFactory");
+            if (logger == null) throw new ArgumentNullException("logger");
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            m_LoggerFactory = loggerFactory;
             m_Logger = logger;
             m_Configuration = configuration;
 
@@ -130,7 +139,12 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
 	                                        configuration.UseInternalSsl, configuration.SslTargetHost, configuration.SslValidateServer,
 	                                        TimeSpan.FromSeconds(configuration.StatsPeriodSec), StatsStorage.StreamAndCsv,
 											configuration.NodePriority, authenticationProviderFactory, configuration.DisableScavengeMerging,
-                                            configuration.AdminOnExt, configuration.StatsOnExt, configuration.GossipOnExt);
+                                            configuration.AdminOnExt, configuration.StatsOnExt, configuration.GossipOnExt,
+                                            //TODO[MT]: read from config
+                                            TimeSpan.FromSeconds(30),
+                                            TimeSpan.FromSeconds(30),
+                                            TimeSpan.FromSeconds(10),
+                                            TimeSpan.FromSeconds(10));
 
             
             IGossipSeedSource gossipSeedSource;
@@ -161,16 +175,94 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             var dbVerifyHashes = !configuration.SkipDbVerify;
             var runProjections = configuration.RunProjections;
 
-            var enabledNodeSubsystems = runProjections >= RunProjections.System
+            var enabledNodeSubsystems = runProjections >= ProjectionType.System
                ? new[] { NodeSubsystems.Projections }
                : new NodeSubsystems[0];
             m_Projections = new ProjectionsSubsystem(configuration.ProjectionThreads, configuration.RunProjections);
             m_Node = new ClusterVNode(db, nodeSettings, gossipSeedSource, dbVerifyHashes, ESConsts.MemTableEntryCount, m_Projections);
             m_Node.MainBus.Subscribe(new UserManagementProjectionsRegistration());
-            m_Node.InternalHttpService.SetupController(new ClusterWebUIController(m_Node.MainQueue, enabledNodeSubsystems));
-            m_Node.ExternalHttpService.SetupController(new ClusterWebUIController(m_Node.MainQueue, enabledNodeSubsystems));
+
+
+            m_Node.InternalHttpService.SetupController(new ClusterWebUiController(m_Node.MainQueue, enabledNodeSubsystems));
+            m_Node.ExternalHttpService.SetupController(new ClusterWebUiController(m_Node.MainQueue, enabledNodeSubsystems));
             m_Node.InternalHttpService.SetupController(new UsersWebController(m_Node.MainQueue));
             m_Node.ExternalHttpService.SetupController(new UsersWebController(m_Node.MainQueue));
+        }
+        protected void Init(string[] defines)
+        {
+            Application.AddDefines(defines);
+
+            LogManager.SetLogFactory(s => new CastleToEventStoreLoggerAdapter(m_LoggerFactory.Create(s)));
+        }
+
+        protected static TFChunkDbConfig CreateDbConfig(string dbPath, int cachedChunks, long chunksCacheSize, bool inMemDb)
+        {
+            if (!Directory.Exists(dbPath))
+                Directory.CreateDirectory(dbPath);
+
+            ICheckpoint writerChk;
+            ICheckpoint chaserChk;
+            ICheckpoint epochChk;
+            ICheckpoint truncateChk;
+
+            if (inMemDb)
+            {
+                writerChk = new InMemoryCheckpoint(Checkpoint.Writer);
+                chaserChk = new InMemoryCheckpoint(Checkpoint.Chaser);
+                epochChk = new InMemoryCheckpoint(Checkpoint.Epoch, -1);
+                truncateChk = new InMemoryCheckpoint(Checkpoint.Truncate, -1);
+            }
+            else
+            {
+               
+
+                var writerCheckFilename = Path.Combine(dbPath, Checkpoint.Writer + ".chk");
+                var chaserCheckFilename = Path.Combine(dbPath, Checkpoint.Chaser + ".chk");
+                var epochCheckFilename = Path.Combine(dbPath, Checkpoint.Epoch + ".chk");
+                var truncateCheckFilename = Path.Combine(dbPath, Checkpoint.Truncate + ".chk");
+                writerChk = new MemoryMappedFileCheckpoint(writerCheckFilename, Checkpoint.Writer, cached: true);
+                chaserChk = new MemoryMappedFileCheckpoint(chaserCheckFilename, Checkpoint.Chaser, cached: true);
+                epochChk = new MemoryMappedFileCheckpoint(epochCheckFilename, Checkpoint.Epoch, cached: true,
+                                                          initValue: -1);
+                truncateChk = new MemoryMappedFileCheckpoint(truncateCheckFilename, Checkpoint.Truncate, cached: true,
+                                                             initValue: -1);
+            }
+            var cache = cachedChunks >= 0
+                            ? cachedChunks * (long)(TFConsts.ChunkSize + ChunkHeader.Size + ChunkFooter.Size)
+                            : chunksCacheSize;
+            var nodeConfig = new TFChunkDbConfig(dbPath,
+                                                 new VersionedPatternFileNamingStrategy(dbPath, "chunk-"),
+                                                 TFConsts.ChunkSize,                                                 
+                                                 cache,
+                                                 writerChk,
+                                                 chaserChk,
+                                                 epochChk,
+                                                 truncateChk);
+            return nodeConfig;
+        }
+
+        protected static X509Certificate2 LoadCertificateFromFile(string path, string password)
+        {
+            return new X509Certificate2(path, password);
+        }
+
+        protected static X509Certificate2 LoadCertificateFromStore(string storeName, string certName)
+        {
+            var store = new X509Store(storeName);
+            try
+            {
+                store.Open(OpenFlags.OpenExistingOnly);
+            }
+            catch (Exception exc)
+            {
+                throw new Exception(string.Format("Couldn't open certificates store '{0}'.", storeName), exc);
+            }
+            foreach (var cert in store.Certificates)
+            {
+                if (cert.Subject == certName)
+                    return cert;
+            }
+            throw new ArgumentException(string.Format("Certificate '{0}' not found in storage '{1}'.", certName, storeName));
         }
     }
 }

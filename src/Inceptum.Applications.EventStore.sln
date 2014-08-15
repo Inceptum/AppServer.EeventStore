@@ -1,11 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.Applications.EventStoreNode.Single", "Inceptum.Applications.EventStoreNode.Single\Inceptum.Applications.EventStoreNode.Single.csproj", "{654D5DC6-9843-4A2B-8292-8E8A7B0A51C2}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.Applications.EventStoreNode.Cluster", "Inceptum.Applications.EventStoreNode.Cluster\Inceptum.Applications.EventStoreNode.Cluster.csproj", "{64706F50-11A9-4EAA-9A8D-4DB68F7F9BFE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.Applications.EventStoreNode.Common", "Inceptum.Applications.EventStoreNode.Common\Inceptum.Applications.EventStoreNode.Common.csproj", "{27C65FFE-732B-4211-8B6E-2DFD0F367D87}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.Applications.EventStoreNode.Tests", "Inceptum.Applications.EventStoreNode.Tests\Inceptum.Applications.EventStoreNode.Tests.csproj", "{B3CC26B4-9496-455C-B3B6-A88CC0CA2F18}"
 EndProject
@@ -15,18 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{654D5DC6-9843-4A2B-8292-8E8A7B0A51C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{654D5DC6-9843-4A2B-8292-8E8A7B0A51C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{654D5DC6-9843-4A2B-8292-8E8A7B0A51C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{654D5DC6-9843-4A2B-8292-8E8A7B0A51C2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{64706F50-11A9-4EAA-9A8D-4DB68F7F9BFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{64706F50-11A9-4EAA-9A8D-4DB68F7F9BFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64706F50-11A9-4EAA-9A8D-4DB68F7F9BFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64706F50-11A9-4EAA-9A8D-4DB68F7F9BFE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{27C65FFE-732B-4211-8B6E-2DFD0F367D87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{27C65FFE-732B-4211-8B6E-2DFD0F367D87}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{27C65FFE-732B-4211-8B6E-2DFD0F367D87}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{27C65FFE-732B-4211-8B6E-2DFD0F367D87}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B3CC26B4-9496-455C-B3B6-A88CC0CA2F18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B3CC26B4-9496-455C-B3B6-A88CC0CA2F18}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3CC26B4-9496-455C-B3B6-A88CC0CA2F18}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -29,10 +29,12 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             ExternalHttpPort = Opts.ExternalHttpPortDefault;
             HttpPrefixes = Opts.HttpPrefixesDefault;
             ClusterSize = Opts.ClusterSizeDefault;
-            CertificateStore = Opts.CertificateStoreDefault;
-            CertificateName = Opts.CertificateNameDefault;
+            
+            CertificateStore = Opts.CertificateStoreLocationDefault;
+            CertificateName = Opts.CertificateStoreNameDefault;
             CertificateFile = Opts.CertificateFileDefault;
             CertificatePassword = Opts.CertificatePasswordDefault;
+
             PrepareCount = Opts.PrepareCountDefault;
             CommitCount = Opts.CommitCountDefault;
             UseInternalSsl = Opts.UseInternalSslDefault;
@@ -145,7 +147,7 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
         public int ClusterGossipPort { get; set; }
 
         public bool SkipDbVerify { get; set; }
-        public RunProjections RunProjections { get; set; }
+        public ProjectionType RunProjections { get; set; }
 
         public int ProjectionThreads { get; set; }
 

@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationInstaller.cs" />
+    <Compile Include="CastleToEventStoreLoggerAdapter.cs" />
     <Compile Include="ClusterNodeApplication.cs" />
     <Compile Include="ClusterNodeConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -98,12 +99,6 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Inceptum.Applications.EventStoreNode.Common\Inceptum.Applications.EventStoreNode.Common.csproj">
-      <Project>{27C65FFE-732B-4211-8B6E-2DFD0F367D87}</Project>
-      <Name>Inceptum.Applications.EventStoreNode.Common</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
