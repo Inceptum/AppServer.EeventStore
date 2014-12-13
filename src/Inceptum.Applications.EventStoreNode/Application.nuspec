@@ -12,4 +12,26 @@
     <copyright>Copyright 2014</copyright>
     <tags>Inceptum.AppServer.Application</tags>
   </metadata>
+  <files>
+    <file src="app.config" target="config" />
+    <file src="bin\$Configuration$\Content\**\*.*" target="Content" />
+    <file src="bin\$Configuration$\EventStore.BufferManagement.dll" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.BufferManagement.pdb" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.ClusterNode.Web.dll" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.ClusterNode.Web.pdb" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.Common.dll" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.Common.pdb" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.Core.dll" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.Core.pdb" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.Projections.Core.dll" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.Projections.Core.pdb" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.Transport.Http.dll" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.Transport.Http.pdb" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.Transport.Tcp.dll" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.Transport.Tcp.pdb" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.Web.dll" target="lib\net45\" />
+    <file src="bin\$Configuration$\EventStore.Web.pdb" target="lib\net45\" />
+    <file src="bin\$Configuration$\js1.dll" target="native\x64\" />
+    <file src="bin\$Configuration$\js1.pdb" target="native\x64\" />
+  </files>
 </package>
