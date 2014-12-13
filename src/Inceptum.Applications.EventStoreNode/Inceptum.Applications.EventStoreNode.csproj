@@ -90,6 +90,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SolutionInfo.cs">
+      <Link>Properties\SolutionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\VersionInfo.cs">
+      <Link>Properties\VersionInfo.cs</Link>
+    </Compile>
     <Compile Include="ApplicationInstaller.cs" />
     <Compile Include="CastleToEventStoreLoggerAdapter.cs" />
     <Compile Include="ClusterNodeApplication.cs" />
@@ -98,6 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Application.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />

@@ -9,8 +9,8 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
     {
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            container.AddFacility<ConfigurationFacility>(f => f.Configuration("event-store"));
-            container.Register(Component.For<ClusterNodeConfiguration>().FromConfiguration("cluster-node", "", "{environment}", "{instance}"));
+            container.AddFacility<ConfigurationFacility>(f => { /*f.Configuration("event-store");*/ });
+            container.Register(Component.For<ClusterNodeConfiguration>().FromConfiguration("cluster-node", "", "{environment}", "{machineName}", "{instance}"));
         }
     }
 }

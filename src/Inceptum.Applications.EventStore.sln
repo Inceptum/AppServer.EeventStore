@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.Applications.EventStoreNode.Cluster", "Inceptum.Applications.EventStoreNode.Cluster\Inceptum.Applications.EventStoreNode.Cluster.csproj", "{64706F50-11A9-4EAA-9A8D-4DB68F7F9BFE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.Applications.EventStoreNode", "Inceptum.Applications.EventStoreNode\Inceptum.Applications.EventStoreNode.csproj", "{64706F50-11A9-4EAA-9A8D-4DB68F7F9BFE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inceptum.Applications.EventStoreNode.Tests", "Inceptum.Applications.EventStoreNode.Tests\Inceptum.Applications.EventStoreNode.Tests.csproj", "{B3CC26B4-9496-455C-B3B6-A88CC0CA2F18}"
 EndProject

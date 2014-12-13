@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Inceptum.AppServer.EventStoreNode</id>
+    <version>$version$</version>
+    <title>Event Store Cluster Node</title>
+    <authors>InceptumSoft</authors>
+    <owners>InceptumSoft</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Inceptum AppServer Event Store cluster node</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>Inceptum.AppServer.Application</tags>
+  </metadata>
+</package>
