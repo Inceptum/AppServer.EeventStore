@@ -8,8 +8,15 @@ using Newtonsoft.Json;
 
 namespace Inceptum.Applications.EventStoreNode.Cluster
 {
-    public class ClusterNodeConfiguration
+    public class ClusterNodeConfiguration : IOptions
     {
+        private const bool m_Help = Opts.ShowHelpDefault;
+        private const bool m_Version = Opts.ShowVersionDefault;
+        private readonly string m_Config = string.Empty;
+        private readonly string m_Log = Opts.LogsDefault;
+        private const bool m_Force = Opts.ForceDefault;
+        private const bool m_WhatIf = Opts.WhatIfDefault;
+
         public ClusterNodeConfiguration()
         {
             #region set cluster node defaults
@@ -68,7 +75,37 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
 
         public bool InMemDb { get; set; }
 
+        public bool Help
+        {
+            get { return m_Help; }
+        }
+
+        public bool Version
+        {
+            get { return m_Version; }
+        }
+
+        public string Config
+        {
+            get { return m_Config; }
+        }
+
+        public string Log
+        {
+            get { return m_Log; }
+        }
+
         public string[] Defines { get; set; }
+
+        public bool Force
+        {
+            get { return m_Force; }
+        }
+
+        public bool WhatIf
+        {
+            get { return m_WhatIf; }
+        }
 
         public int CachedChunks { get; set; }
         public long ChunksCacheSize { get; set; }

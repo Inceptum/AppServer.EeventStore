@@ -15,21 +15,21 @@ namespace Inceptum.Applications.EventStoreNode.Tests
     public class SimpleTests
     {
         [Test, Ignore]
-        public void ConnectsToLocalEventStoreClusterTest()
+        public async void ConnectsToLocalEventStoreClusterTest()
         {
             using (var connection = 
                 EventStoreConnection.Create(ConnectionSettings.Create().KeepReconnecting(),
                 ClusterSettings.Create()
-                               .WithGossipTimeoutOf(TimeSpan.FromMilliseconds(500))
-                               .SetClusterDns("fake.dns")
-                               .WithGossipSeeds(new[]
+                                .DiscoverClusterViaGossipSeeds()
+                               .SetGossipTimeout(TimeSpan.FromMilliseconds(500))
+                               .SetGossipSeedEndPoints(new[]
                                    {
                                        new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1113),
                                        new IPEndPoint(IPAddress.Parse("127.0.0.1"), 2113),
                                        new IPEndPoint(IPAddress.Parse("127.0.0.1"), 3113)
                                    })))
             {
-                connection.Connect();
+                await connection.ConnectAsync();
 
                 int i = 1000;
                 while (i-- > 0)
@@ -44,7 +44,8 @@ namespace Inceptum.Applications.EventStoreNode.Tests
                     var bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(data, new JsonSerializerSettings()));
                     var ed = new EventData(Guid.NewGuid(), "ChatMessage", true, bytes, null);
 
-                    connection.AppendToStream("chat-GeneralChat", -2, new EventData[] {ed});
+                    var result = await connection.AppendToStreamAsync("chat-GeneralChat", -2, new EventData[] {ed});
+                    Console.WriteLine(JsonConvert.SerializeObject(result, Formatting.Indented));
                     Thread.Sleep(1234);
                 }
 

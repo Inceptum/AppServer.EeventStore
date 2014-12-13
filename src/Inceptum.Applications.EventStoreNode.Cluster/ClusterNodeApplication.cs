@@ -127,24 +127,29 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             var authenticationProviderFactory = getAuthenticationProviderFactory(configuration.AuthenticationType, configuration.AuthenticationConfigFile);
 
             var nodeSettings =  new ClusterVNodeSettings(Guid.NewGuid(), 0,
-	                                        intTcp, intSecTcp, extTcp, extSecTcp, intHttp, extHttp,
-	                                        prefixes, configuration.EnableTrustedAuth,
-	                                        certificate,
-	                                        configuration.WorkerThreads, configuration.DiscoverViaDns,
-	                                        configuration.ClusterDns, configuration.GossipSeedsEndPoints,
-											TimeSpan.FromMilliseconds(configuration.MinFlushDelayMs), configuration.ClusterSize,
-	                                        prepareCount, commitCount,
-	                                        TimeSpan.FromMilliseconds(configuration.PrepareTimeoutMs),
-	                                        TimeSpan.FromMilliseconds(configuration.CommitTimeoutMs),
-	                                        configuration.UseInternalSsl, configuration.SslTargetHost, configuration.SslValidateServer,
-	                                        TimeSpan.FromSeconds(configuration.StatsPeriodSec), StatsStorage.StreamAndCsv,
-											configuration.NodePriority, authenticationProviderFactory, configuration.DisableScavengeMerging,
+                                            intTcp, intSecTcp, extTcp, extSecTcp, intHttp, extHttp,
+                                            prefixes, configuration.EnableTrustedAuth,
+                                            certificate,
+                                            configuration.WorkerThreads, configuration.DiscoverViaDns,
+                                            configuration.ClusterDns, configuration.GossipSeedsEndPoints,
+                                            TimeSpan.FromMilliseconds(configuration.MinFlushDelayMs), configuration.ClusterSize,
+                                            prepareCount, commitCount,
+                                            TimeSpan.FromMilliseconds(configuration.PrepareTimeoutMs),
+                                            TimeSpan.FromMilliseconds(configuration.CommitTimeoutMs),
+                                            configuration.UseInternalSsl, configuration.SslTargetHost, configuration.SslValidateServer,
+                                            TimeSpan.FromSeconds(configuration.StatsPeriodSec), StatsStorage.StreamAndCsv,
+                                            configuration.NodePriority, authenticationProviderFactory, configuration.DisableScavengeMerging,
                                             configuration.AdminOnExt, configuration.StatsOnExt, configuration.GossipOnExt,
-                                            //TODO[MT]: read from config
-                                            TimeSpan.FromSeconds(30),
-                                            TimeSpan.FromSeconds(30),
-                                            TimeSpan.FromSeconds(10),
-                                            TimeSpan.FromSeconds(10));
+                                            TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.GossipIntervalMsDefault),
+                                            TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.GossipAllowedDifferenceMsDefault),
+                                            TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.GossipTimeoutMsDefault),
+                                            TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.ExtTcpHeartbeatTimeoutDefault),
+                                            TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.ExtTcpHeartbeatIntervalDefault),
+                                            TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.IntTcpHeartbeatTimeoutDefault),
+                                            TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.IntTcpHeartbeatInvervalDefault),
+                                            !EventStore.Core.Util.Opts.SkipDbVerifyDefault, EventStore.Core.Util.Opts.MaxMemtableSizeDefault
+                                            
+                                            );
 
             
             IGossipSeedSource gossipSeedSource;
@@ -172,14 +177,14 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
                 gossipSeedSource = new KnownEndpointGossipSeedSource(configuration.GossipSeedsEndPoints);
             }
 
-            var dbVerifyHashes = !configuration.SkipDbVerify;
             var runProjections = configuration.RunProjections;
 
             var enabledNodeSubsystems = runProjections >= ProjectionType.System
                ? new[] { NodeSubsystems.Projections }
                : new NodeSubsystems[0];
             m_Projections = new ProjectionsSubsystem(configuration.ProjectionThreads, configuration.RunProjections);
-            m_Node = new ClusterVNode(db, nodeSettings, gossipSeedSource, dbVerifyHashes, ESConsts.MemTableEntryCount, m_Projections);
+            var infoController = new InfoController(configuration); 
+            m_Node = new ClusterVNode(db, nodeSettings, gossipSeedSource, infoController, m_Projections);
             m_Node.MainBus.Subscribe(new UserManagementProjectionsRegistration());
 
 
