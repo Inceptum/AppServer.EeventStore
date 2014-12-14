@@ -20,7 +20,7 @@ namespace Inceptum.Applications.EventStoreNode.Tests
             using (var connection = 
                 EventStoreConnection.Create(ConnectionSettings.Create().KeepReconnecting(),
                 ClusterSettings.Create()
-                                .DiscoverClusterViaGossipSeeds()
+                               .DiscoverClusterViaGossipSeeds()
                                .SetGossipTimeout(TimeSpan.FromMilliseconds(500))
                                .SetGossipSeedEndPoints(new[]
                                    {
