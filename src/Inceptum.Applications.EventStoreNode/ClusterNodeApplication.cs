@@ -89,12 +89,12 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             return clusterSize / 2 + 1;
         }
 
-        private IAuthenticationProviderFactory getAuthenticationProviderFactory(string authenticationType, string authenticationConfigFile)
+        private IAuthenticationProviderFactory getAuthenticationProviderFactory(String authenticationType, String authenticationConfigFile)
         {
             if ("internal".Equals(authenticationType))
                 return new InternalAuthenticationProviderFactory();
 
-            throw new Exception(string.Format("The authentication type {0} is not recognised.", authenticationType));
+            throw new Exception(String.Format("The authentication type {0} is not recognised.", authenticationType));
 
         }
 
@@ -108,11 +108,11 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             {
                 m_DbLock = new ExclusiveDbLock(dbPath);
                 if (!m_DbLock.Acquire())
-                    throw new Exception(string.Format("Couldn't acquire exclusive lock on DB at '{0}'.", dbPath));
+                    throw new Exception(String.Format("Couldn't acquire exclusive lock on DB at '{0}'.", dbPath));
             }
             m_ClusterNodeMutex = new ClusterNodeMutex();
             if (!m_ClusterNodeMutex.Acquire())
-                throw new Exception(string.Format("Couldn't acquire exclusive Cluster Node mutex '{0}'.", m_ClusterNodeMutex.MutexName));
+                throw new Exception(String.Format("Couldn't acquire exclusive Cluster Node mutex '{0}'.", m_ClusterNodeMutex.MutexName));
             
             var db = new TFChunkDb(CreateDbConfig(dbPath, configuration.CachedChunks, configuration.ChunksCacheSize, configuration.InMemDb));
             
@@ -129,12 +129,12 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
                 {
                     if (configuration.ClusterSize > 1)
                     {
-                        m_Logger.Error(string.Format("DNS discovery is disabled, but no gossip seed endpoints have been specified. " +
+                        m_Logger.Error(String.Format("DNS discovery is disabled, but no gossip seed endpoints have been specified. " +
                                                 "Specify gossip seeds using the 'GossipSeed' configuration property."));
                     }
                     else
                     {
-                        m_Logger.Info(string.Format("DNS discovery is disabled, but no gossip seed endpoints have been specified. Since" +
+                        m_Logger.Info(String.Format("DNS discovery is disabled, but no gossip seed endpoints have been specified. Since" +
                                                "the cluster size is set to 1, this may be intentional. Gossip seeds can be specified" +
                                                "seeds using the 'GossipSeed' configuration property."));
                     }
@@ -148,7 +148,7 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             var enabledNodeSubsystems = runProjections >= ProjectionType.System
                ? new[] { NodeSubsystems.Projections }
                : new NodeSubsystems[0];
-            m_Projections = new ProjectionsSubsystem(configuration.ProjectionThreads, configuration.RunProjections, Opts.StartStandardProjectionsDefault);
+            m_Projections = new ProjectionsSubsystem(configuration.ProjectionThreads, configuration.RunProjections, configuration.StartStandardProjections);
             var infoController = new InfoController(configuration, configuration.RunProjections); 
             m_Node = new ClusterVNode(db, nodeSettings, gossipSeedSource, infoController, m_Projections);
 
@@ -193,18 +193,18 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
                 : null;
             var internalHttpPrefixes = configuration.InternalHttpPrefixes.IsNotEmpty()
                 ? configuration.InternalHttpPrefixes
-                : new string[0];
+                : new String[0];
             var externalHttpPrefixes = configuration.ExternalHttpPrefixes.IsNotEmpty()
                 ? configuration.ExternalHttpPrefixes
-                : new string[0];
+                : new String[0];
             var quorumSize = getQuorumSize(configuration.ClusterSize);
 
             GossipAdvertiseInfo gossipAdvertiseInfo;
 
             IPAddress intIpAddressToAdvertise = configuration.InternalIpAddressAdvertiseAs ?? configuration.InternalIpAddress;
             IPAddress extIpAddressToAdvertise = configuration.ExternalIpAddressAdvertiseAs ?? configuration.ExternalIpAddress;
-            var additionalIntHttpPrefixes = new List<string>(internalHttpPrefixes);
-            var additionalExtHttpPrefixes = new List<string>(externalHttpPrefixes);
+            var additionalIntHttpPrefixes = new List<String>(internalHttpPrefixes);
+            var additionalExtHttpPrefixes = new List<String>(externalHttpPrefixes);
 
             if ((configuration.InternalIpAddress.Equals(IPAddress.Parse("0.0.0.0")) ||
                 configuration.ExternalIpAddress.Equals(IPAddress.Parse("0.0.0.0"))) && configuration.AddInterfacePrefixes)
@@ -317,14 +317,14 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             return nodeSettings;
         }
 
-        protected void Init(string[] defines)
+        protected void Init(String[] defines)
         {
             Application.AddDefines(defines); 
 
             LogManager.SetLogFactory(s => new CastleToEventStoreLoggerAdapter(m_LoggerFactory.Create(s)));
         }
 
-        protected static TFChunkDbConfig CreateDbConfig(string dbPath, int cachedChunks, long chunksCacheSize, bool inMemDb)
+        protected static TFChunkDbConfig CreateDbConfig(String dbPath, int cachedChunks, long chunksCacheSize, bool inMemDb)
         {
             if (!Directory.Exists(dbPath))
                 Directory.CreateDirectory(dbPath);
@@ -370,24 +370,24 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             return nodeConfig;
         }
 
-        protected static X509Certificate2 LoadCertificateFromFile(string path, string password)
+        protected static X509Certificate2 LoadCertificateFromFile(String path, String password)
         {
             return new X509Certificate2(path, password);
         }
 
-        protected static X509Certificate2 LoadCertificateFromStore(string certificateStoreLocation, string certificateStoreName, string certificateSubjectName, string certificateThumbprint)
+        protected static X509Certificate2 LoadCertificateFromStore(String certificateStoreLocation, String certificateStoreName, String certificateSubjectName, String certificateThumbprint)
         {
             X509Store store;
 
-            if (!string.IsNullOrWhiteSpace(certificateStoreLocation))
+            if (!String.IsNullOrWhiteSpace(certificateStoreLocation))
             {
                 StoreLocation location;
                 if (!Enum.TryParse(certificateStoreLocation, out location))
-                    throw new Exception(string.Format("Could not find certificate store location '{0}'", certificateStoreLocation));
+                    throw new Exception(String.Format("Could not find certificate store location '{0}'", certificateStoreLocation));
 
                 StoreName name;
                 if (!Enum.TryParse(certificateStoreName, out name))
-                    throw new Exception(string.Format("Could not find certificate store name '{0}'", certificateStoreName));
+                    throw new Exception(String.Format("Could not find certificate store name '{0}'", certificateStoreName));
 
                 store = new X509Store(name, location);
 
@@ -397,14 +397,14 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
                 }
                 catch (Exception exc)
                 {
-                    throw new Exception(string.Format("Could not open certificate store '{0}' in location {1}'.", name, location), exc);
+                    throw new Exception(String.Format("Could not open certificate store '{0}' in location {1}'.", name, location), exc);
                 }
             }
             else
             {
                 StoreName name;
                 if (!Enum.TryParse(certificateStoreName, out name))
-                    throw new Exception(string.Format("Could not find certificate store name '{0}'", certificateStoreName));
+                    throw new Exception(String.Format("Could not find certificate store name '{0}'", certificateStoreName));
 
                 store = new X509Store(name);
 
@@ -414,32 +414,32 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
                 }
                 catch (Exception exc)
                 {
-                    throw new Exception(string.Format("Could not open certificate store '{0}'.", name), exc);
+                    throw new Exception(String.Format("Could not open certificate store '{0}'.", name), exc);
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(certificateThumbprint))
+            if (!String.IsNullOrWhiteSpace(certificateThumbprint))
             {
                 var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, certificateThumbprint, true);
                 if (certificates.Count == 0)
-                    throw new Exception(string.Format("Could not find valid certificate with thumbprint '{0}'.", certificateThumbprint));
+                    throw new Exception(String.Format("Could not find valid certificate with thumbprint '{0}'.", certificateThumbprint));
 
                 //Can this even happen?
                 if (certificates.Count > 1)
-                    throw new Exception(string.Format("Could not determine a unique certificate from thumbprint '{0}'.", certificateThumbprint));
+                    throw new Exception(String.Format("Could not determine a unique certificate from thumbprint '{0}'.", certificateThumbprint));
 
                 return certificates[0];
             }
 
-            if (!string.IsNullOrWhiteSpace(certificateSubjectName))
+            if (!String.IsNullOrWhiteSpace(certificateSubjectName))
             {
                 var certificates = store.Certificates.Find(X509FindType.FindBySubjectName, certificateSubjectName, true);
                 if (certificates.Count == 0)
-                    throw new Exception(string.Format("Could not find valid certificate with thumbprint '{0}'.", certificateThumbprint));
+                    throw new Exception(String.Format("Could not find valid certificate with thumbprint '{0}'.", certificateThumbprint));
 
                 //Can this even happen?
                 if (certificates.Count > 1)
-                    throw new Exception(string.Format("Could not determine a unique certificate from thumbprint '{0}'.", certificateThumbprint));
+                    throw new Exception(String.Format("Could not determine a unique certificate from thumbprint '{0}'.", certificateThumbprint));
 
                 return certificates[0];
             }

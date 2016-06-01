@@ -70,6 +70,7 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             GossipOnExt = Opts.GossipOnExtDefault;
             ScavengeHistoryMaxAge = Opts.ScavengeHistoryMaxAgeDefault;
             AddInterfacePrefixes = Opts.AddInterfacePrefixesDefault;
+            StartStandardProjections = Opts.StartStandardProjectionsDefault;
 
             #endregion
         }
@@ -204,6 +205,7 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
         public int InternalHttpPortAdvertiseAs { get; set; }
         public int ExternalSecureTcpPortAdvertiseAs { get; set; }
         public int ExternalHttpPortAdvertiseAs { get; set; }
+        public bool StartStandardProjections { get; set; }
 
         private static IPEndPoint parseIpEndPoint(string endPoint)
         {
