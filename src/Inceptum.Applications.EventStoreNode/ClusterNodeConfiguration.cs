@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using EventStore.Common.Options;
+using EventStore.Common.Utils;
 using EventStore.Core.Util;
 using Newtonsoft.Json;
 
@@ -13,16 +14,15 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
         private const bool m_Help = Opts.ShowHelpDefault;
         private const bool m_Version = Opts.ShowVersionDefault;
         private readonly string m_Config = string.Empty;
-        private readonly string m_Log = Opts.LogsDefault;
+        private readonly string m_Log = Locations.DefaultLogDirectory;
         private const bool m_Force = Opts.ForceDefault;
         private const bool m_WhatIf = Opts.WhatIfDefault;
-
+        
         public ClusterNodeConfiguration()
         {
             #region set cluster node defaults
 
             InMemDb = Opts.InMemDbDefault;
-
             Defines = Opts.DefinesDefault;
             CachedChunks = Opts.CachedChunksDefault;
             ChunksCacheSize = Opts.ChunksCacheSizeDefault;
@@ -34,14 +34,15 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             ExternalTcpPort = Opts.ExternalTcpPortDefault;
             ExternalSecureTcpPort = Opts.ExternalSecureTcpPortDefault;
             ExternalHttpPort = Opts.ExternalHttpPortDefault;
-            HttpPrefixes = Opts.HttpPrefixesDefault;
+            InternalHttpPrefixes = Opts.IntHttpPrefixesDefault;
+            ExternalHttpPrefixes= Opts.ExtHttpPrefixesDefault;
             ClusterSize = Opts.ClusterSizeDefault;
-            
-            CertificateStore = Opts.CertificateStoreLocationDefault;
-            CertificateName = Opts.CertificateStoreNameDefault;
+            CertificateStoreLocation = Opts.CertificateStoreLocationDefault;
+            CertificateStoreName = Opts.CertificateStoreNameDefault;
+            CertificateSubjectName = Opts.CertificateSubjectNameDescr;
+            CertificateThumbprint = Opts.CertificateThumbprintDefault;
             CertificateFile = Opts.CertificateFileDefault;
             CertificatePassword = Opts.CertificatePasswordDefault;
-
             PrepareCount = Opts.PrepareCountDefault;
             CommitCount = Opts.CommitCountDefault;
             UseInternalSsl = Opts.UseInternalSslDefault;
@@ -61,14 +62,14 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             NodePriority = Opts.NodePriorityDefault;
             DisableScavengeMerging = Opts.DisableScavengeMergeDefault;
             ClusterGossipPort = Opts.ClusterGossipPortDefault;
-
             SkipDbVerify = Opts.SkipDbVerifyDefault;
             RunProjections = Opts.RunProjectionsDefault;
             ProjectionThreads = Opts.ProjectionThreadsDefault;
-
             AdminOnExt = Opts.AdminOnExtDefault;
             StatsOnExt = Opts.StatsOnExtDefault;
             GossipOnExt = Opts.GossipOnExtDefault;
+            ScavengeHistoryMaxAge = Opts.ScavengeHistoryMaxAgeDefault;
+            AddInterfacePrefixes = Opts.AddInterfacePrefixesDefault;
 
             #endregion
         }
@@ -136,12 +137,15 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
         public int ExternalSecureTcpPort { get; set; }
         public int ExternalHttpPort { get; set; }
 
-        public string[] HttpPrefixes { get; set; }
+        public string[] InternalHttpPrefixes { get; set; }
+        public string[] ExternalHttpPrefixes { get; set; }
 
         public int ClusterSize { get; set; }
 
-        public string CertificateStore { get; set; }
-        public string CertificateName { get; set; }
+        public string CertificateStoreLocation { get; set; }
+        public string CertificateStoreName { get; set; }
+        public string CertificateSubjectName { get; set; }
+        public string CertificateThumbprint { get; set; }
         public string CertificateFile { get; set; }
         public string CertificatePassword { get; set; }
 
@@ -180,13 +184,26 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
         public bool GossipOnExt { get; set; }
 
         public bool DisableScavengeMerging { get; set; }
-
+        public int ScavengeHistoryMaxAge { get; set; }
         public int ClusterGossipPort { get; set; }
 
         public bool SkipDbVerify { get; set; }
         public ProjectionType RunProjections { get; set; }
 
         public int ProjectionThreads { get; set; }
+
+        [JsonIgnore]
+        public IPAddress InternalIpAddressAdvertiseAs { get; set; }
+        [JsonIgnore]
+        public IPAddress ExternalIpAddressAdvertiseAs { get; set; }
+
+        public bool AddInterfacePrefixes { get; set; }
+        public int InternalTcpPortAddressAdvertiseAs { get; set; }
+        public int InternalSecureTcpPortAdvertiseAs { get; set; }
+        public int ExternalTcpPortAdvertiseAs { get; set; }
+        public int InternalHttpPortAdvertiseAs { get; set; }
+        public int ExternalSecureTcpPortAdvertiseAs { get; set; }
+        public int ExternalHttpPortAdvertiseAs { get; set; }
 
         private static IPEndPoint parseIpEndPoint(string endPoint)
         {

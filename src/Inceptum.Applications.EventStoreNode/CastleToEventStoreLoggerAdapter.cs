@@ -65,6 +65,11 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             m_Logger.DebugFormat(format, args);
         }
 
+        public void Warn(string format, params object[] args)
+        {
+            m_Logger.WarnFormat(format, args);
+        }
+
         public void Trace(string format, params object[] args)
         {
             m_Logger.DebugFormat(format, args);

@@ -42,9 +42,6 @@
     <Reference Include="EventStore.BufferManagement">
       <HintPath>..\..\eventstore\EventStore.BufferManagement.dll</HintPath>
     </Reference>
-    <Reference Include="EventStore.ClientAPI">
-      <HintPath>..\..\eventstore\EventStore.ClientAPI.dll</HintPath>
-    </Reference>
     <Reference Include="EventStore.ClusterNode.Web">
       <HintPath>..\..\eventstore\EventStore.ClusterNode.Web.dll</HintPath>
     </Reference>
@@ -56,9 +53,6 @@
     </Reference>
     <Reference Include="EventStore.Projections.Core">
       <HintPath>..\..\eventstore\EventStore.Projections.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="EventStore.SingleNode.Web">
-      <HintPath>..\..\eventstore\EventStore.SingleNode.Web.dll</HintPath>
     </Reference>
     <Reference Include="EventStore.Transport.Http">
       <HintPath>..\..\eventstore\EventStore.Transport.Http.dll</HintPath>
@@ -75,8 +69,9 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="NLog">
-      <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
+    <Reference Include="NLog, Version=3.2.1.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.3.2.1\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="protobuf-net">
       <HintPath>..\packages\protobuf-net.2.0.0.594\lib\net40\protobuf-net.dll</HintPath>
