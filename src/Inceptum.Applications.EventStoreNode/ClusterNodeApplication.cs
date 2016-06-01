@@ -54,14 +54,25 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
 
         public void Start()
         {
-            if (m_Logger.IsDebugEnabled)
-            {
-                m_Logger.DebugFormat("ApplicationDirectory {0}", Locations.ApplicationDirectory);
-                m_Logger.DebugFormat("ApplicationDirectory1 {0}", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-                m_Logger.DebugFormat("ApplicationDirectory2 {0}", Path.GetFullPath("."));
-            }
+            copyDirectoriesFrom(
+                Path.Combine(Path.GetFullPath("."), "content"),
+                Path.Combine(Path.GetFullPath("."), "bin"));
 
             m_Node.StartAndWaitUntilReady();
+        }
+
+        private void copyDirectoriesFrom(String from, String to)
+        {
+            //Now Create all of the directories
+            foreach (String dirPath in Directory.GetDirectories(from, "*",
+                SearchOption.AllDirectories))
+                Directory.CreateDirectory(dirPath.Replace(from, to));
+
+            //Copy all the files & Replaces any files with the same name
+            foreach (String newPath in Directory.GetFiles(from, "*.*",
+                SearchOption.AllDirectories))
+                File.Copy(newPath, newPath.Replace(from, to), true);
+
         }
 
         void IDisposable.Dispose()
