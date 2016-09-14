@@ -14,22 +14,22 @@ namespace Inceptum.Applications.EventStoreNode.Tests
     [TestFixture]
     public class SimpleTests
     {
-        [Test, Ignore]
-        public async void ConnectsToLocalEventStoreClusterTest()
+        [Test]
+        public void ConnectsToLocalEventStoreClusterTest()
         {
             using (var connection = 
-                EventStoreConnection.Create(ConnectionSettings.Create().KeepReconnecting(),
+                EventStoreConnection.Create(ConnectionSettings.Create(),
                 ClusterSettings.Create()
                                .DiscoverClusterViaGossipSeeds()
                                .SetGossipTimeout(TimeSpan.FromMilliseconds(500))
                                .SetGossipSeedEndPoints(new[]
                                    {
-                                       new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1113),
-                                       new IPEndPoint(IPAddress.Parse("127.0.0.1"), 2113),
-                                       new IPEndPoint(IPAddress.Parse("127.0.0.1"), 3113)
+                                       new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1114),
+                                       new IPEndPoint(IPAddress.Parse("127.0.0.1"), 2114),
+                                       new IPEndPoint(IPAddress.Parse("127.0.0.1"), 3114)
                                    })))
             {
-                await connection.ConnectAsync();
+                connection.ConnectAsync().Wait();
 
                 int i = 1000;
                 while (i-- > 0)
@@ -44,7 +44,7 @@ namespace Inceptum.Applications.EventStoreNode.Tests
                     var bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(data, new JsonSerializerSettings()));
                     var ed = new EventData(Guid.NewGuid(), "ChatMessage", true, bytes, null);
 
-                    var result = await connection.AppendToStreamAsync("chat-GeneralChat", -2, new EventData[] {ed});
+                    WriteResult result = connection.AppendToStreamAsync("chat-GeneralChat", -2, new EventData[] {ed}).Result;
                     Console.WriteLine(JsonConvert.SerializeObject(result, Formatting.Indented));
                     Thread.Sleep(1234);
                 }

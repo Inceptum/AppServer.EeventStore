@@ -72,8 +72,50 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             AddInterfacePrefixes = Opts.AddInterfacePrefixesDefault;
             StartStandardProjections = Opts.StartStandardProjectionsDefault;
 
+            DisableHTTPCaching = Opts.DisableHttpCachingDefault;
+            LogHttpRequests = Opts.LogHttpRequestsDefault;
+            EnableHistograms = Opts.HistogramEnabledDefault;
+            UnsafeIgnoreHardDelete = Opts.UnsafeIgnoreHardDeleteDefault;
+            UnsafeDisableFlushToDisk = Opts.UnsafeDisableFlushToDiskDefault;
+            BetterOrdering = Opts.BetterOrderingDefault;
+            IndexCacheDepth = Opts.IndexCacheDepthDefault;
+
+            GossipTimeoutMs = Opts.GossipTimeoutMsDefault;
+            GossipIntervalMs = Opts.GossipIntervalMsDefault;
+            GossipAllowedDifferenceMs = Opts.GossipAllowedDifferenceMsDefault;
+            HashCollisionReadLimit = Opts.HashCollisionReadLimitDefault;
+            MaxMemTableSize = Opts.MaxMemtableSizeDefault;
+
+            InternalTcpHeartbeatTimeout = Opts.IntTcpHeartbeatTimeoutDefault;
+            InternalTcpHeartbeatInterval = Opts.IntTcpHeartbeatIntervalDefault;
+            ExternalTcpHeartbeatTimeout = Opts.ExtTcpHeartbeatTimeoutDefault;
+            ExternalTcpHeartbeatInterval = Opts.ExtTcpHeartbeatIntervalDefault;
+            ReaderThreadsCount = Opts.ReaderThreadsCountDefault;
+
             #endregion
         }
+
+        public int ReaderThreadsCount { get; set; }
+
+        public int InternalTcpHeartbeatTimeout { get; set; }
+        public int InternalTcpHeartbeatInterval { get; set; }
+        public int ExternalTcpHeartbeatTimeout { get; set; }
+        public int ExternalTcpHeartbeatInterval { get; set; }
+
+        public int MaxMemTableSize { get; set; }
+        public int HashCollisionReadLimit { get; set; }
+        public int GossipIntervalMs { get; set; }
+        public int GossipAllowedDifferenceMs { get; set; }
+        public int GossipTimeoutMs { get; set; }
+
+        public int IndexCacheDepth { get; set; }
+
+        public bool DisableHTTPCaching { get; set; }
+        public bool LogHttpRequests { get; set; }
+        public bool EnableHistograms { get; set; }
+        public bool UnsafeIgnoreHardDelete { get; set; }
+        public bool UnsafeDisableFlushToDisk { get; set; }
+        public bool BetterOrdering { get; set; }
 
         public bool InMemDb { get; set; }
 
@@ -199,7 +241,7 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
         public IPAddress ExternalIpAddressAdvertiseAs { get; set; }
 
         public bool AddInterfacePrefixes { get; set; }
-        public int InternalTcpPortAddressAdvertiseAs { get; set; }
+        public int InternalTcpPortAdvertiseAs { get; set; }
         public int InternalSecureTcpPortAdvertiseAs { get; set; }
         public int ExternalTcpPortAdvertiseAs { get; set; }
         public int InternalHttpPortAdvertiseAs { get; set; }

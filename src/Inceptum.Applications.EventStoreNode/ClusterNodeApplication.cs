@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using Castle.Core.Logging;
+using EventStore.Common.Exceptions;
 using EventStore.Common.Options;
 using EventStore.Common.Utils;
 using EventStore.Core;
@@ -18,12 +21,14 @@ using EventStore.Core.Settings;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.Util;
 using EventStore.Projections.Core;
-using EventStore.Web.Users;
 using Inceptum.AppServer;
 using EventStore.Common.Log;
 using EventStore.Core.Data;
+using EventStore.Core.PluginModel;
+using EventStore.Core.Services.PersistentSubscription.ConsumerStrategy;
 using EventStore.Core.TransactionLog.Checkpoint;
 using EventStore.Core.TransactionLog.FileNamingStrategy;
+using NLog.Fluent;
 
 
 namespace Inceptum.Applications.EventStoreNode.Cluster
@@ -116,7 +121,6 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
             
             var db = new TFChunkDb(CreateDbConfig(dbPath, configuration.CachedChunks, configuration.ChunksCacheSize, configuration.InMemDb));
             
-            var nodeSettings = getClusterVNodeSettings(configuration);
 
             IGossipSeedSource gossipSeedSource;
             if (configuration.DiscoverViaDns)
@@ -150,171 +154,270 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
                : new NodeSubsystems[0];
             m_Projections = new ProjectionsSubsystem(configuration.ProjectionThreads, configuration.RunProjections, configuration.StartStandardProjections);
             var infoController = new InfoController(configuration, configuration.RunProjections); 
-            m_Node = new ClusterVNode(db, nodeSettings, gossipSeedSource, infoController, m_Projections);
+            m_Node = BuildNode(configuration); //new ClusterVNode(db, nodeSettings, gossipSeedSource, infoController, m_Projections);
 
-            RegisterWebControllers(enabledNodeSubsystems, nodeSettings);
+            RegisterWebControllers(enabledNodeSubsystems, configuration);
         }
 
-        private void RegisterWebControllers(NodeSubsystems[] enabledNodeSubsystems, ClusterVNodeSettings settings)
+        private static int GetQuorumSize(int clusterSize)
+        {
+            if (clusterSize == 1) return 1;
+            return clusterSize / 2 + 1;
+        }
+
+        private ClusterVNode BuildNode(ClusterNodeConfiguration configuration)
+        {
+            var options = configuration;
+            var quorumSize = GetQuorumSize(options.ClusterSize);
+
+            var intHttp = new IPEndPoint(options.InternalIpAddress, options.InternalHttpPort);
+            var extHttp = new IPEndPoint(options.ExternalIpAddress, options.ExternalHttpPort);
+            var intTcp = new IPEndPoint(options.InternalIpAddress, options.InternalTcpPort);
+            var intSecTcp = options.InternalSecureTcpPort > 0 ? new IPEndPoint(options.InternalIpAddress, options.InternalSecureTcpPort) : null;
+            var extTcp = new IPEndPoint(options.ExternalIpAddress, options.ExternalTcpPort);
+            var extSecTcp = options.ExternalSecureTcpPort > 0 ? new IPEndPoint(options.ExternalIpAddress, options.ExternalSecureTcpPort) : null;
+
+            var prepareCount = options.PrepareCount > quorumSize ? options.PrepareCount : quorumSize;
+            var commitCount = options.CommitCount > quorumSize ? options.CommitCount : quorumSize;
+            m_Logger.Info("Quorum size set to " + prepareCount);
+            if (options.UseInternalSsl)
+            {
+                if (ReferenceEquals(options.SslTargetHost, Opts.SslTargetHostDefault)) throw new Exception("No SSL target host specified.");
+                if (intSecTcp == null) throw new Exception("Usage of internal secure communication is specified, but no internal secure endpoint is specified!");
+            }
+
+            VNodeBuilder builder;
+            if (options.ClusterSize > 1)
+            {
+                builder = ClusterVNodeBuilder.AsClusterMember(options.ClusterSize);
+            }
+            else
+            {
+                builder = ClusterVNodeBuilder.AsSingleNode();
+            }
+            if (options.InMemDb)
+            {
+                builder = builder.RunInMemory();
+            }
+            else
+            {
+                var dbPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "event-store"));
+                builder = builder.RunOnDisk(dbPath);
+            }
+
+            var indexPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "event-store-index"));
+            builder.WithInternalTcpOn(intTcp)
+                        .WithInternalSecureTcpOn(intSecTcp)
+                        .WithExternalTcpOn(extTcp)
+                        .WithExternalSecureTcpOn(extSecTcp)
+                        .WithInternalHttpOn(intHttp)
+                        .WithExternalHttpOn(extHttp)
+                        .WithWorkerThreads(options.WorkerThreads)
+                        .WithInternalHeartbeatTimeout(TimeSpan.FromMilliseconds(options.InternalTcpHeartbeatTimeout))
+                        .WithInternalHeartbeatInterval(TimeSpan.FromMilliseconds(options.InternalTcpHeartbeatInterval))
+                        .WithExternalHeartbeatTimeout(TimeSpan.FromMilliseconds(options.ExternalTcpHeartbeatTimeout))
+                        .WithExternalHeartbeatInterval(TimeSpan.FromMilliseconds(options.ExternalTcpHeartbeatInterval))
+                        .MaximumMemoryTableSizeOf(options.MaxMemTableSize)
+                        .WithHashCollisionReadLimitOf(options.HashCollisionReadLimit)
+                        .WithGossipInterval(TimeSpan.FromMilliseconds(options.GossipIntervalMs))
+                        .WithGossipAllowedTimeDifference(TimeSpan.FromMilliseconds(options.GossipAllowedDifferenceMs))
+                        .WithGossipTimeout(TimeSpan.FromMilliseconds(options.GossipTimeoutMs))
+                        .WithClusterGossipPort(options.ClusterGossipPort)
+                        .WithMinFlushDelay(TimeSpan.FromMilliseconds(options.MinFlushDelayMs))
+                        .WithPrepareTimeout(TimeSpan.FromMilliseconds(options.PrepareTimeoutMs))
+                        .WithCommitTimeout(TimeSpan.FromMilliseconds(options.CommitTimeoutMs))
+                        .WithStatsPeriod(TimeSpan.FromSeconds(options.StatsPeriodSec))
+                        .WithPrepareCount(prepareCount)
+                        .WithCommitCount(commitCount)
+                        .WithNodePriority(options.NodePriority)
+                        .WithScavengeHistoryMaxAge(options.ScavengeHistoryMaxAge)
+                        .WithIndexPath(indexPath)
+                        .WithIndexCacheDepth(options.IndexCacheDepth)
+                        .WithSslTargetHost(options.SslTargetHost)
+                        .RunProjections(options.RunProjections, options.ProjectionThreads)
+                        .WithTfCachedChunks(options.CachedChunks)
+                        .WithTfChunksCacheSize(options.ChunksCacheSize)
+                        .WithStatsStorage(StatsStorage.StreamAndCsv)
+                        .AdvertiseInternalIPAs(options.InternalIpAddressAdvertiseAs)
+                        .AdvertiseExternalIPAs(options.ExternalIpAddressAdvertiseAs)
+                        .AdvertiseInternalHttpPortAs(options.InternalHttpPortAdvertiseAs)
+                        .AdvertiseExternalHttpPortAs(options.ExternalHttpPortAdvertiseAs)
+                        .AdvertiseInternalTCPPortAs(options.InternalTcpPortAdvertiseAs)
+                        .AdvertiseExternalTCPPortAs(options.ExternalTcpPortAdvertiseAs)
+                        .AdvertiseInternalSecureTCPPortAs(options.InternalSecureTcpPortAdvertiseAs)
+                        .AdvertiseExternalSecureTCPPortAs(options.ExternalSecureTcpPortAdvertiseAs)
+                        .HavingReaderThreads(options.ReaderThreadsCount)
+                        ;
+
+            if (options.GossipSeedsEndPoints.Length > 0)
+                builder.WithGossipSeeds(options.GossipSeedsEndPoints);
+
+            if (options.DiscoverViaDns)
+                builder.WithClusterDnsName(options.ClusterDns);
+            else
+                builder.DisableDnsDiscovery();
+
+            if (!options.AddInterfacePrefixes)
+            {
+                builder.DontAddInterfacePrefixes();
+            }
+
+            foreach (var prefix in options.InternalHttpPrefixes)
+            {
+                builder.AddInternalHttpPrefix(prefix);
+            }
+            foreach (var prefix in options.ExternalHttpPrefixes)
+            {
+                builder.AddExternalHttpPrefix(prefix);
+            }
+
+            if (options.EnableTrustedAuth)
+                builder.EnableTrustedAuth();
+            if (options.StartStandardProjections)
+                builder.StartStandardProjections();
+            if (options.DisableHTTPCaching)
+                builder.DisableHTTPCaching();
+            if (options.DisableScavengeMerging)
+                builder.DisableScavengeMerging();
+            if (options.LogHttpRequests)
+                builder.EnableLoggingOfHttpRequests();
+            if (options.EnableHistograms)
+                builder.EnableHistograms();
+            if (options.UnsafeIgnoreHardDelete)
+                builder.WithUnsafeIgnoreHardDelete();
+            if (options.UnsafeDisableFlushToDisk)
+                builder.WithUnsafeDisableFlushToDisk();
+            if (options.BetterOrdering)
+                builder.WithBetterOrdering();
+            if (options.SslValidateServer)
+                builder.ValidateSslServer();
+            if (options.UseInternalSsl)
+                builder.EnableSsl();
+            if (!options.AdminOnExt)
+                builder.NoAdminOnPublicInterface();
+            if (!options.StatsOnExt)
+                builder.NoStatsOnPublicInterface();
+            if (!options.GossipOnExt)
+                builder.NoGossipOnPublicInterface();
+            if (options.SkipDbVerify)
+                builder.DoNotVerifyDbHashes();
+
+            if (options.InternalSecureTcpPort > 0 || options.ExternalSecureTcpPort > 0)
+            {
+                if (!string.IsNullOrWhiteSpace(options.CertificateStoreLocation))
+                {
+                    var location = GetCertificateStoreLocation(options.CertificateStoreLocation);
+                    var name = GetCertificateStoreName(options.CertificateStoreName);
+                    builder.WithServerCertificateFromStore(location, name, options.CertificateSubjectName, options.CertificateThumbprint);
+                }
+                else if (!string.IsNullOrWhiteSpace(options.CertificateStoreName))
+                {
+                    var name = GetCertificateStoreName(options.CertificateStoreName);
+                    builder.WithServerCertificateFromStore(name, options.CertificateSubjectName, options.CertificateThumbprint);
+                }
+                else if (options.CertificateFile.IsNotEmptyString())
+                {
+                    builder.WithServerCertificateFromFile(options.CertificateFile, options.CertificatePassword);
+                }
+                else
+                    throw new Exception("No server certificate specified.");
+            }
+
+            var authenticationConfig = options.Config;
+            var plugInContainer = FindPlugins();
+            var authenticationProviderFactory = GetAuthenticationProviderFactory(options.AuthenticationType, authenticationConfig, plugInContainer);
+            var consumerStrategyFactories = GetPlugInConsumerStrategyFactories(plugInContainer);
+            builder.WithAuthenticationProvider(authenticationProviderFactory);
+
+            return builder.Build(options, consumerStrategyFactories);
+        }
+
+        private IPersistentSubscriptionConsumerStrategyFactory[] GetPlugInConsumerStrategyFactories(CompositionContainer plugInContainer)
+        {
+            var allPlugins = plugInContainer.GetExports<IPersistentSubscriptionConsumerStrategyPlugin>();
+
+            var strategyFactories = new List<IPersistentSubscriptionConsumerStrategyFactory>();
+
+            foreach (var potentialPlugin in allPlugins)
+            {
+                try
+                {
+                    var plugin = potentialPlugin.Value;
+                    m_Logger.InfoFormat("Loaded consumer strategy plugin: {0} version {1}.", plugin.Name, plugin.Version);
+                    strategyFactories.Add(plugin.GetConsumerStrategyFactory());
+                }
+                catch (CompositionException ex)
+                {
+                    m_Logger.Error("Error loading consumer strategy plugin.", ex);
+                }
+            }
+
+            return strategyFactories.ToArray();
+        }
+
+        private IAuthenticationProviderFactory GetAuthenticationProviderFactory(string authenticationType, string authenticationConfigFile, CompositionContainer plugInContainer)
+        {
+            var potentialPlugins = plugInContainer.GetExports<IAuthenticationPlugin>();
+
+            var authenticationTypeToPlugin = new Dictionary<string, Func<IAuthenticationProviderFactory>> {
+                { "internal", () => new InternalAuthenticationProviderFactory() }
+            };
+
+            foreach (var potentialPlugin in potentialPlugins)
+            {
+                try
+                {
+                    var plugin = potentialPlugin.Value;
+                    var commandLine = plugin.CommandLineName.ToLowerInvariant();
+                    m_Logger.InfoFormat("Loaded authentication plugin: {0} version {1} (Command Line: {2})", plugin.Name, plugin.Version, commandLine);
+                    authenticationTypeToPlugin.Add(commandLine, () => plugin.GetAuthenticationProviderFactory(authenticationConfigFile));
+                }
+                catch (CompositionException ex)
+                {
+                    m_Logger.Error("Error loading authentication plugin.", ex);
+                }
+            }
+
+            Func<IAuthenticationProviderFactory> factory;
+            if (!authenticationTypeToPlugin.TryGetValue(authenticationType.ToLowerInvariant(), out factory))
+            {
+                throw new ApplicationInitializationException(string.Format("The authentication type {0} is not recognised. If this is supposed " +
+                            "to be provided by an authentication plugin, confirm the plugin DLL is located in {1}.\n" +
+                            "Valid options for authentication are: {2}.", authenticationType, Locations.PluginsDirectory, string.Join(", ", authenticationTypeToPlugin.Keys)));
+            }
+
+            return factory();
+        }
+
+        private CompositionContainer FindPlugins()
+        {
+            var catalog = new AggregateCatalog();
+
+            catalog.Catalogs.Add(new AssemblyCatalog(typeof(ClusterNodeApplication).Assembly));
+
+            if (Directory.Exists(Locations.PluginsDirectory))
+            {
+                m_Logger.InfoFormat("Plugins path: {0}", Locations.PluginsDirectory);
+                catalog.Catalogs.Add(new DirectoryCatalog(Locations.PluginsDirectory));
+            }
+            else
+            {
+                m_Logger.InfoFormat("Cannot find plugins path: {0}", Locations.PluginsDirectory);
+            }
+
+            return new CompositionContainer(catalog);
+        }
+
+        private void RegisterWebControllers(NodeSubsystems[] enabledNodeSubsystems, ClusterNodeConfiguration settings)
         {
             if (m_Node.InternalHttpService != null)
             {
                 m_Node.InternalHttpService.SetupController(new ClusterWebUiController(m_Node.MainQueue, enabledNodeSubsystems));
             }
-            if (settings.AdminOnPublic)
+            if (settings.AdminOnExt)
             {
                 m_Node.ExternalHttpService.SetupController(new ClusterWebUiController(m_Node.MainQueue, enabledNodeSubsystems));
             }
-        }
-
-
-        private ClusterVNodeSettings getClusterVNodeSettings(ClusterNodeConfiguration configuration)
-        {
-            X509Certificate2 certificate = null;
-            if (configuration.InternalSecureTcpPort > 0 || configuration.ExternalSecureTcpPort > 0)
-            {
-                if (configuration.CertificateStoreName.IsNotEmptyString())
-                    certificate = LoadCertificateFromStore(configuration.CertificateStoreLocation, configuration.CertificateStoreName, configuration.CertificateSubjectName, configuration.CertificateThumbprint);
-                else if (configuration.CertificateFile.IsNotEmptyString())
-                    certificate = LoadCertificateFromFile(configuration.CertificateFile, configuration.CertificatePassword);
-                else
-                    throw new Exception("No server certificate specified.");
-            }
-
-            var intHttp = new IPEndPoint(configuration.InternalIpAddress, configuration.InternalHttpPort);
-            var extHttp = new IPEndPoint(configuration.ExternalIpAddress, configuration.ExternalHttpPort);
-            var intTcp = new IPEndPoint(configuration.InternalIpAddress, configuration.InternalTcpPort);
-            var intSecTcp = configuration.InternalSecureTcpPort > 0
-                ? new IPEndPoint(configuration.InternalIpAddress, configuration.InternalSecureTcpPort)
-                : null;
-            var extTcp = new IPEndPoint(configuration.ExternalIpAddress, configuration.ExternalTcpPort);
-            var extSecTcp = configuration.ExternalSecureTcpPort > 0
-                ? new IPEndPoint(configuration.ExternalIpAddress, configuration.ExternalSecureTcpPort)
-                : null;
-            var internalHttpPrefixes = configuration.InternalHttpPrefixes.IsNotEmpty()
-                ? configuration.InternalHttpPrefixes
-                : new String[0];
-            var externalHttpPrefixes = configuration.ExternalHttpPrefixes.IsNotEmpty()
-                ? configuration.ExternalHttpPrefixes
-                : new String[0];
-            var quorumSize = getQuorumSize(configuration.ClusterSize);
-
-            GossipAdvertiseInfo gossipAdvertiseInfo;
-
-            IPAddress intIpAddressToAdvertise = configuration.InternalIpAddressAdvertiseAs ?? configuration.InternalIpAddress;
-            IPAddress extIpAddressToAdvertise = configuration.ExternalIpAddressAdvertiseAs ?? configuration.ExternalIpAddress;
-            var additionalIntHttpPrefixes = new List<String>(internalHttpPrefixes);
-            var additionalExtHttpPrefixes = new List<String>(externalHttpPrefixes);
-
-            if ((configuration.InternalIpAddress.Equals(IPAddress.Parse("0.0.0.0")) ||
-                configuration.ExternalIpAddress.Equals(IPAddress.Parse("0.0.0.0"))) && configuration.AddInterfacePrefixes)
-            {
-                IPAddress nonLoopbackAddress = GetNonLoopbackAddress();
-                IPAddress addressToAdvertise = configuration.ClusterSize > 1 ? nonLoopbackAddress : IPAddress.Loopback;
-
-                if (configuration.InternalIpAddress.Equals(IPAddress.Parse("0.0.0.0")))
-                {
-                    intIpAddressToAdvertise = configuration.InternalIpAddressAdvertiseAs ?? addressToAdvertise;
-                    additionalIntHttpPrefixes.Add(String.Format("http://*:{0}/", intHttp.Port));
-                }
-                if (configuration.ExternalIpAddress.Equals(IPAddress.Parse("0.0.0.0")))
-                {
-                    extIpAddressToAdvertise = configuration.InternalIpAddressAdvertiseAs ?? addressToAdvertise;
-                    additionalExtHttpPrefixes.Add(String.Format("http://*:{0}/", extHttp.Port));
-                }
-            }
-            else if (configuration.AddInterfacePrefixes)
-            {
-                additionalIntHttpPrefixes.Add(String.Format("http://{0}:{1}/", configuration.InternalIpAddress, configuration.InternalHttpPort));
-                if (configuration.InternalIpAddress.Equals(IPAddress.Loopback))
-                {
-                    additionalIntHttpPrefixes.Add(String.Format("http://localhost:{0}/", configuration.InternalHttpPort));
-                }
-                additionalExtHttpPrefixes.Add(String.Format("http://{0}:{1}/", configuration.ExternalIpAddress, configuration.ExternalHttpPort));
-                if (configuration.ExternalIpAddress.Equals(IPAddress.Loopback))
-                {
-                    additionalExtHttpPrefixes.Add(String.Format("http://localhost:{0}/", configuration.ExternalHttpPort));
-                }
-            }
-
-            internalHttpPrefixes = additionalIntHttpPrefixes.ToArray();
-            externalHttpPrefixes = additionalExtHttpPrefixes.ToArray();
-
-
-            var intTcpPort = configuration.InternalTcpPortAddressAdvertiseAs > 0 ? configuration.InternalTcpPortAddressAdvertiseAs : configuration.InternalTcpPort;
-            var intTcpEndPoint = new IPEndPoint(intIpAddressToAdvertise, intTcpPort);
-            var intSecureTcpPort = configuration.InternalSecureTcpPortAdvertiseAs > 0 ? configuration.InternalSecureTcpPortAdvertiseAs : configuration.InternalSecureTcpPort;
-            var intSecureTcpEndPoint = new IPEndPoint(intIpAddressToAdvertise, intSecureTcpPort);
-
-            var extTcpPort = configuration.ExternalTcpPortAdvertiseAs > 0 ? configuration.ExternalTcpPortAdvertiseAs : configuration.ExternalTcpPort;
-            var extTcpEndPoint = new IPEndPoint(extIpAddressToAdvertise, extTcpPort);
-            var extSecureTcpPort = configuration.ExternalSecureTcpPortAdvertiseAs > 0 ? configuration.ExternalSecureTcpPortAdvertiseAs : configuration.ExternalSecureTcpPort;
-            var extSecureTcpEndPoint = new IPEndPoint(extIpAddressToAdvertise, extSecureTcpPort);
-
-            var intHttpPort = configuration.InternalHttpPortAdvertiseAs > 0 ? configuration.InternalHttpPortAdvertiseAs : configuration.InternalHttpPort;
-            var extHttpPort = configuration.ExternalHttpPortAdvertiseAs > 0 ? configuration.ExternalHttpPortAdvertiseAs : configuration.ExternalHttpPort;
-
-            var intHttpEndPoint = new IPEndPoint(intIpAddressToAdvertise, intHttpPort);
-            var extHttpEndPoint = new IPEndPoint(extIpAddressToAdvertise, extHttpPort);
-
-            gossipAdvertiseInfo = new GossipAdvertiseInfo(intTcpEndPoint, intSecureTcpEndPoint,
-                                                          extTcpEndPoint, extSecureTcpEndPoint,
-                                                          intHttpEndPoint, extHttpEndPoint);
-
-            var prepareCount = configuration.PrepareCount > quorumSize ? configuration.PrepareCount : quorumSize;
-            var commitCount = configuration.CommitCount > quorumSize ? configuration.CommitCount : quorumSize;
-
-            m_Logger.Info("Quorum size set to " + prepareCount);
-
-            if (configuration.UseInternalSsl)
-            {
-                if (ReferenceEquals(configuration.SslTargetHost, Opts.SslTargetHostDefault))
-                    throw new Exception("No SSL target host specified.");
-                if (intSecTcp == null)
-                    throw new Exception(
-                        "Usage of internal secure communication is specified, but no internal secure endpoint is specified!");
-            }
-
-            var authenticationProviderFactory = getAuthenticationProviderFactory(configuration.AuthenticationType,
-                configuration.AuthenticationConfigFile);
-
-            var nodeSettings = new ClusterVNodeSettings(Guid.NewGuid(), 0,
-                intTcp, intSecTcp, extTcp, extSecTcp, intHttp, extHttp, gossipAdvertiseInfo,
-                internalHttpPrefixes, externalHttpPrefixes, configuration.EnableTrustedAuth,
-                certificate,
-                configuration.WorkerThreads, configuration.DiscoverViaDns,
-                configuration.ClusterDns, configuration.GossipSeedsEndPoints,
-                TimeSpan.FromMilliseconds(configuration.MinFlushDelayMs), configuration.ClusterSize,
-                prepareCount, commitCount,
-                TimeSpan.FromMilliseconds(configuration.PrepareTimeoutMs),
-                TimeSpan.FromMilliseconds(configuration.CommitTimeoutMs),
-                configuration.UseInternalSsl, configuration.SslTargetHost, configuration.SslValidateServer,
-                TimeSpan.FromSeconds(configuration.StatsPeriodSec), StatsStorage.StreamAndCsv,
-                configuration.NodePriority, authenticationProviderFactory, configuration.DisableScavengeMerging,
-                configuration.ScavengeHistoryMaxAge,
-                configuration.AdminOnExt, configuration.StatsOnExt, configuration.GossipOnExt,
-
-                //TODO[MT]: below default values should be avaliable for configuration vua configuration class
-                TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.GossipIntervalMsDefault),
-                TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.GossipAllowedDifferenceMsDefault),
-                TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.GossipTimeoutMsDefault),
-                TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.IntTcpHeartbeatTimeoutDefault),
-                TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.IntTcpHeartbeatInvervalDefault),
-                TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.ExtTcpHeartbeatTimeoutDefault),
-                TimeSpan.FromMilliseconds(EventStore.Core.Util.Opts.ExtTcpHeartbeatIntervalDefault),
-                !EventStore.Core.Util.Opts.SkipDbVerifyDefault,
-                EventStore.Core.Util.Opts.MaxMemtableSizeDefault,
-                EventStore.Core.Util.Opts.StartStandardProjectionsDefault,
-                EventStore.Core.Util.Opts.DisableHttpCachingDefault,
-                EventStore.Core.Util.Opts.LogHttpRequestsDefault,
-                index: null,
-                enableHistograms: false,
-                indexCacheDepth: 16,
-                additionalConsumerStrategies: null,
-                unsafeIgnoreHardDeletes: false,
-                betterOrdering: false
-                );
-            return nodeSettings;
         }
 
         protected void Init(String[] defines)
@@ -368,6 +471,22 @@ namespace Inceptum.Applications.EventStoreNode.Cluster
                                                  epochChk,
                                                  truncateChk);
             return nodeConfig;
+        }
+
+        protected static StoreLocation GetCertificateStoreLocation(string certificateStoreLocation)
+        {
+            StoreLocation location;
+            if (!Enum.TryParse(certificateStoreLocation, out location))
+                throw new Exception(string.Format("Could not find certificate store location '{0}'", certificateStoreLocation));
+            return location;
+        }
+
+        protected static StoreName GetCertificateStoreName(string certificateStoreName)
+        {
+            StoreName name;
+            if (!Enum.TryParse(certificateStoreName, out name))
+                throw new Exception(string.Format("Could not find certificate store name '{0}'", certificateStoreName));
+            return name;
         }
 
         protected static X509Certificate2 LoadCertificateFromFile(String path, String password)
