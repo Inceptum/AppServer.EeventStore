@@ -14,7 +14,7 @@
   </metadata>
   <files>
     <file src="app.config" target="config" />
-    <file src="..\..\config\**\*" target="DefaultConfig" exclude="**\*.dev" />
+    <file src="..\..\configuration\**\*" target="DefaultConfig" exclude="**\*.dev" />
     <file src="bin\$Configuration$\Content\**\*.*" target="Content" />
     <file src="bin\$Configuration$\EventStore.BufferManagement.dll" target="lib\net45\" />
     <file src="bin\$Configuration$\EventStore.BufferManagement.pdb" target="lib\net45\" />
