@@ -10,7 +10,7 @@
   "externalTcpPort": 1113,
   "externalHttpPort": 2113,
   "httpPrefixes": [],
-  "clusterSize": 1,  
+  "clusterSize": 1,
   "certificateStore": "",
   "certificateName": "",
   "certificateFile": "",
@@ -31,5 +31,6 @@
   "statsPeriodSec": 30,
   "clusterGossipPort": 30777,
   "runProjections": "All",
+  "startStandardProjections": true,
   "projectionThreads": 3
 }
