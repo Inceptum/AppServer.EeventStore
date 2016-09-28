@@ -1,0 +1,10 @@
+{
+  "internalTcpPort": 3111,
+  "internalHttpPort": 3113,
+  "externalTcpPort": 3112,
+  "externalHttpPort": 3114,
+  "gossipSeeds": [
+    "127.0.0.1:1113",
+    "127.0.0.1:2113"
+  ]
+}
