@@ -33,7 +33,7 @@
     <file src="bin\$Configuration$\EventStore.Transport.Tcp.pdb" target="lib\net45\" />
     <file src="bin\$Configuration$\HdrHistogram.NET.dll" target="lib\net45\" />
     <file src="bin\$Configuration$\HdrHistogram.NET.pdb" target="lib\net45\" />
-    <file src="bin\$Configuration$\js1.dll" target="native\x64\" />
-    <file src="bin\$Configuration$\js1.pdb" target="native\x64\" />
+    <file src="bin\$Configuration$\js1.dll" target="lib\net45\" />
+    <file src="bin\$Configuration$\js1.pdb" target="lib\net45\" />
   </files>
 </package>
